@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-practice-cli-task-manager/internal/storage"
-	"math"
 	"os"
 	"time"
 )
@@ -67,8 +66,10 @@ func AddTask(t *Task) {
 
 	tasks := readTasks()
 	var maxId int64 = 0
-	for _, t := range tasks {
-		maxId = int64(math.Max(float64(t.Id), float64(maxId)))
+	for _, ts := range tasks {
+		if ts.Id > maxId {
+			maxId = ts.Id
+		}
 	}
 	t.Id = maxId + 1
 	tasks = append(tasks, *t)
