@@ -1,48 +1,58 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	jsonstorage "json_storage/internal/storage"
-	"json_storage/internal/task"
-	"os"
-	"strings"
+	"go-practice-cli-task-manager/internal/storage"
+	"go-practice-cli-task-manager/internal/task"
 )
 
 func main() {
 
-	jsonstorage.AutoCreateDB()
-	action := os.Args[1]
-	strings.ToLower(action)
+	addFlag := flag.String("add", "", "gimme the title of a task")
+	listFlag := flag.Bool("list", false, "List of tasks")
+	getTaskFlag := flag.Int64("get", 0, "Get task detail by id")
+	doneTaskFlag := flag.Int64("done", 0, "Done task by id")
+	deleteTaskFlag := flag.Int64("delete", 0, "delete task by id")
 
-	switch action {
-	case "add":
-		v := os.Args[2]
-		if v == "" {
-			fmt.Println("title must be filled!")
-		}
-		newTask := task.NewTask(v)
-		jsonstorage.AddTask(newTask)
-	case "list":
-		fmt.Println(jsonstorage.ReadTasks())
+	used := false
+	flag.VisitAll(func(f *flag.Flag) {
+		used = true
+	})
 
-	case "get":
-		v := os.Args[2]
-		if v == "" {
-			fmt.Println("id must filled")
-		}
-		fmt.Println(jsonstorage.GetTaskById(v))
-	case "done":
-		v := os.Args[2]
-		if v == "" {
-			fmt.Println("id must filled")
-		}
-		jsonstorage.DoneTask(v)
+	if !used {
+		fmt.Println("Invalid Flag")
+		flag.Usage()
+		return
+	}
 
-	case "delete":
-		v := os.Args[2]
-		if v == "" {
-			fmt.Println("id must filled")
-		}
-		jsonstorage.DeleteTask(v)
+	storage.AutoCreateDB()
+
+	flag.Parse()
+
+	if *listFlag {
+		fmt.Println(task.ReadTasks())
+		return
+	}
+
+	if *addFlag != "" {
+		newTask := task.NewTask(*addFlag)
+		task.AddTask(newTask)
+		return
+	}
+
+	if *getTaskFlag != 0 {
+		fmt.Println(task.GetTaskById(*getTaskFlag))
+		return
+	}
+
+	if *doneTaskFlag != 0 {
+		task.CompleteTask(*doneTaskFlag)
+		return
+	}
+
+	if *deleteTaskFlag != 0 {
+		task.DeleteTask(*deleteTaskFlag)
+		return
 	}
 }
